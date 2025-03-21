@@ -8,6 +8,13 @@
 #define tt template<class T>
 #define tl tlist<T>
 
+#define maketag(u, opt) if(u->right) {\
+	opt##opt u->right->lazy; \
+	u->right->id opt##= -1;\
+}
+#define pds(u, side) if(u->side) {u->side->lazy+=u->lazy; u->side->id-=u->lazy;}
+#define pushdown(u) pds(u, left) pds(u, right) u->lazy=0;
+
 tt struct tl::node_t {
 	size_t id;
 	T val;
@@ -53,7 +60,8 @@ tt void tl::insert(size_t index, const T& val) {
 		rotate(fina);
 #endif
 	fina=n_insert(head, index, val);
-	--orig->lazy;
+	// --orig->lazy;
+	// maketag(orig, --)
 	head=rotate(fina);
 }
 
@@ -69,19 +77,24 @@ tt typename tl::node_t* tl::n_insert(node_t *curr, size_t id, const T& val) {
 	if(!curr) return new node_t{id,val ,NULL, NULL, 
 		0, 1, 1};
 	if(curr->id == id) {
+		pushdown(curr)
 		node_t *tmp=new node_t{id, val, curr->left, curr, 0,
 			curr->size+1, curr->depth+1};
 		curr->left=NULL;
 		curr->size=(cr ? cr->size : 0)+1;
 		curr->depth=(cr ? cr->size : 0)+1;
 		++curr->id;
+		maketag(curr, -)
 		return tmp;
 	}
+	#if 0
 	if(curr->right) {
 		cr->id -= curr->lazy;
 		cr->lazy += curr->lazy;
 	}
 	curr->lazy=0;
+	#endif
+	pushdown(curr)
 	size_t uid=curr->id;
 	if(uid < id) {
 		curr->right = n_insert(curr->right, id, val);
@@ -91,6 +104,8 @@ tt typename tl::node_t* tl::n_insert(node_t *curr, size_t id, const T& val) {
 	}
 	if(uid > id) {
 		curr->left = n_insert(curr->left, id, val);
+		++curr->id;
+		maketag(curr, -)
 		++curr->size;
 		curr->depth=max(dp(curr->left), dp(cr))+1;
 		return rotate(curr);
@@ -125,11 +140,14 @@ typename tl::node_t* tl::__rspin(node_t *u) {
 
 tt typename tl::node_t* tl::rotate(node_t *u) {
 	int ubf=bf(u);
+	#if 0
 	if(u->right) {
 		u->right->id -= u->lazy;
 		u->right->lazy += u->lazy;
 	}
 	u->lazy=0;
+	#endif
+	pushdown(u);
 	if(ubf >  1 && bf(u->left)  >= 0) return __rspin(u);
 	if(ubf >  1 && bf(u->left)  <  0) {
 		u->left = __lspin(u->left);
@@ -147,11 +165,14 @@ tt typename tl::node_t *tl::n_query(node_t *u, size_t i) {
 	if(!u) return NULL;
 	size_t uid=u->id;
 	if(uid == i) return u;
+	#if 0
 	if(u->right) {
 		u->right->lazy += u->lazy;
 		u->right->id -= u->lazy;
 	}
 	u->lazy=0;
+	#endif
+	pushdown(u)
 	if(uid >  i) return n_query(u->left, i);
 	return n_query(u->right, i);
 }
@@ -161,13 +182,15 @@ tt typename tl::node_t *tl::n_remove(node_t *tgt, size_t id) {
 	size_t uid=tgt->id;
 	if(uid == id) {
 		if(tgt->right && tgt->left) {
+			#if 0
 			node_t *next=tgt->right;
-			next->lazy += tgt->lazy;
-			next->id -= tgt->lazy;
+			pushdown(tgt)
 			while(next->left) next=next->left;
-			tgt->lazy++;
-			tgt->val=next->val;
+			// tgt->lazy++;
+			#endif
+			tgt->val=n_query(tgt->right, id+1)->val;
 			tgt->right=n_remove(tgt->right, id+1);
+			maketag(tgt, +)
 			upd(tgt)
 			return rotate(tgt);
 		}
@@ -179,15 +202,19 @@ tt typename tl::node_t *tl::n_remove(node_t *tgt, size_t id) {
 			return ret;
 		}
 	}
+	#if 0
 	if(tgt->right) {
 		tgt->right->lazy += tgt->lazy;
 		tgt->right->id -= tgt->lazy;
 	}
 	tgt->lazy=0;
+	#endif
+	pushdown(tgt)
 	if(uid > id) { 
 		tgt->left=n_remove(tgt->left, id);
 		--tgt->id;
-		++tgt->lazy;
+		// ++tgt->lazy;
+		maketag(tgt, +)
 	}
 	else if(uid < id)
 		tgt->right=n_remove(tgt->right, id);
@@ -196,6 +223,10 @@ tt typename tl::node_t *tl::n_remove(node_t *tgt, size_t id) {
 }
 #undef sz
 #undef upd
+
+#undef pushdown
+#undef pds
+#undef maketag
 
 #undef dp
 #undef bf

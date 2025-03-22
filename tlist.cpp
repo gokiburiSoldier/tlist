@@ -41,6 +41,7 @@ tt void tl::append(const T& value) {
 
 tt void tl::remove(size_t index) {
 	head=n_remove(head, index);
+	--maxid;
 }
 
 tt void tl::insert(size_t index, const T& val) {
@@ -63,6 +64,7 @@ tt void tl::insert(size_t index, const T& val) {
 	// --orig->lazy;
 	// maketag(orig, --)
 	head=rotate(fina);
+	++maxid;
 }
 
 tt T& tl::query(size_t index) {

@@ -17,6 +17,7 @@ int main() {
     while(q--) {
         int opt, a;
         cin >> opt >> a;
+        cout << "Deal with opt " << opt << ' ' << a << endl;
         switch (opt) {
             case 1:
                 cout << ls.query(a-1) << endl;
@@ -28,5 +29,6 @@ int main() {
                 ls.remove(a-1);
                 break;
         }
+        cout << "Finished query" << endl;
     }
 }

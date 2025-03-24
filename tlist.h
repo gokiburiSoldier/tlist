@@ -12,7 +12,6 @@ class tlist {
 	private:
 		node_t *__lspin(node_t*);
 		node_t *__rspin(node_t*);
-		//node_t *getfa(node_t*);
 		void destory(node_t*);
 		node_t* n_insert(node_t*, size_t, const T&);
 		node_t *rotate(node_t*);

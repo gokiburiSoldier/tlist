@@ -60,14 +60,12 @@ tt void tl::insert(size_t index, const T& val) {
 		--orig->lazy;
 		rotate(fina);
 #endif
-	fina=n_insert(head, index, val);
-	// --orig->lazy;
-	// maketag(orig, --)
-	head=rotate(fina);
+	head=n_insert(head, index, val);
 	++maxid;
 }
 
 tt T& tl::query(size_t index) {
+	if(index >= maxid) throw "666";
 	return n_query(head, index)->val;
 }
 
@@ -76,7 +74,7 @@ tt T& tl::query(size_t index) {
 
 #define dp(u) ((u) ? u->depth : 0)
 tt typename tl::node_t* tl::n_insert(node_t *curr, size_t id, const T& val) {
-	if(!curr) return new node_t{id,val ,NULL, NULL, 
+	if(!curr) return new node_t{id, val ,NULL, NULL, 
 		0, 1, 1};
 	if(curr->id == id) {
 		pushdown(curr)
@@ -84,10 +82,10 @@ tt typename tl::node_t* tl::n_insert(node_t *curr, size_t id, const T& val) {
 			curr->size+1, curr->depth+1};
 		curr->left=NULL;
 		curr->size=(cr ? cr->size : 0)+1;
-		curr->depth=(cr ? cr->size : 0)+1;
+		curr->depth=(cr ? cr->depth : 0)+1;
 		++curr->id;
 		maketag(curr, -)
-		return tmp;
+		return rotate(tmp);
 	}
 	#if 0
 	if(curr->right) {
@@ -167,13 +165,6 @@ tt typename tl::node_t *tl::n_query(node_t *u, size_t i) {
 	if(!u) return NULL;
 	size_t uid=u->id;
 	if(uid == i) return u;
-	#if 0
-	if(u->right) {
-		u->right->lazy += u->lazy;
-		u->right->id -= u->lazy;
-	}
-	u->lazy=0;
-	#endif
 	pushdown(u)
 	if(uid >  i) return n_query(u->left, i);
 	return n_query(u->right, i);
@@ -181,15 +172,10 @@ tt typename tl::node_t *tl::n_query(node_t *u, size_t i) {
 
 tt typename tl::node_t *tl::n_remove(node_t *tgt, size_t id) {
 	if(!tgt) return NULL;
+	pushdown(tgt)
 	size_t uid=tgt->id;
 	if(uid == id) {
 		if(tgt->right && tgt->left) {
-			#if 0
-			node_t *next=tgt->right;
-			pushdown(tgt)
-			while(next->left) next=next->left;
-			// tgt->lazy++;
-			#endif
 			tgt->val=n_query(tgt->right, id+1)->val;
 			tgt->right=n_remove(tgt->right, id+1);
 			maketag(tgt, +)
@@ -200,22 +186,15 @@ tt typename tl::node_t *tl::n_remove(node_t *tgt, size_t id) {
 			node_t *ret=tgt;
 			if(tgt->left) ret=tgt->left;
 			else ret=tgt->right;
+			maketag(tgt, +)
 			delete tgt;
 			return ret;
 		}
 	}
-	#if 0
-	if(tgt->right) {
-		tgt->right->lazy += tgt->lazy;
-		tgt->right->id -= tgt->lazy;
-	}
-	tgt->lazy=0;
-	#endif
 	pushdown(tgt)
 	if(uid > id) { 
 		tgt->left=n_remove(tgt->left, id);
 		--tgt->id;
-		// ++tgt->lazy;
 		maketag(tgt, +)
 	}
 	else if(uid < id)

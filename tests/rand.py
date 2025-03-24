@@ -12,7 +12,7 @@ pg1 = "nl"
 
 pg2 = "k"
 
-n=randint(1, 25*2)
+n=randint(1, 25*25)
 q=randint(0, 50)
 
 N = n
@@ -24,7 +24,7 @@ for i in range(n):
     ls.append(randint(1, 40))
 
 for i in range(q):
-    o = randint(1, 2)
+    o = randint(1, 3)
     op.append((o, randint(1, n)))
     if o == 2:
         n += 1
